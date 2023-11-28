@@ -1,0 +1,36 @@
+---
+title: "Práctica Programada 2"
+author: "Sandra López Torres"
+date: "2023-11-27"
+editor_options: 
+  markdown: 
+    wrap: 72
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(shiny)
+library(shinydashboard)
+library(dplyr)
+library(readxl)
+library(ggplot2)
+library(gapminder)
+library(readr)
+```
+
+
+1.Cargar tus datos
+
+```{r}
+getwd()
+```
+
+```{r}
+setwd("C:/Users/Admin/OneDrive/Documentos/Nueva carpeta/Programación/Nivel III/PracticaProgramada1_IIINivel")
+```
+
+```{r}
+ datos <- readr::read_csv("datos/datos_libertad", skip = 1)
+```
+
