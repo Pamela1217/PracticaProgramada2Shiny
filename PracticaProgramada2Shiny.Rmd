@@ -17,6 +17,7 @@ library(readxl)
 library(ggplot2)
 library(gapminder)
 library(readr)
+library(plotly)
 ```
 
 
@@ -31,6 +32,64 @@ setwd("C:/Users/Admin/OneDrive/Documentos/Nueva carpeta/Programación/Nivel III/
 ```
 
 ```{r}
- datos <- readr::read_csv("datos/datos_libertad", skip = 1)
+ datos <- readr::read_csv("datos/datos_libertad.csv", skip = 1)
 ```
+
+2. Deberá construir un dashboard de shiny que permita a las personas usuarias visualizar información sobre
+países acerca de libertad humana, libertad personal, libertad económica.
+La aplicación deberá permitir a las persona usuarias:
+• Elegir el país para el cual desean visualizar datos de libertad.
+• Elegir el rango de tiempo para el cual desean visualizar los datos de libertad.
+• Elegir si la persona desea visualizar datos de ranking o de puntaje.
+• Permitir a las personas usuarias descargar los datos correspondientes al país y rango de años elegidos.
+El estilo y diseño de la aplicación puede ajustarlos de acuerdo a su creatividad. A continuación se muestra
+una idea básica de cómo podría construirse esta aplicación en shiny.
+
+```{r}
+# Definir el UI
+ui <- dashboardPage(
+  dashboardHeader(title = "Dashboard de Libertad"),
+  dashboardSidebar(
+    # Agregar elementos de entrada
+    selectInput("país", "Selecciona un país:", choices = unique(datos_lib$país)),
+    dateRangeInput("date_range", "Selecciona un rango de fechas:", start = min(datos_lib$anio), end = max(datos_lib$anio)),
+    radioButtons("data_type", "Selecciona tipo de datos:", choices = c("Ranking", "Puntaje")),
+    downloadButton("download_data", "Descargar datos")
+  ),
+  dashboardBody(
+    # Agregar elementos de salida
+    plotlyOutput("freedom_plot")
+  )
+)
+
+# Definir el servidor
+server <- function(input, output) {
+  # Crear una función reactiva para filtrar datos según las selecciones del usuario
+  filtered_data <- reactive({
+    datos_lib |> 
+      filter(país == input$país, anio >= input$date_range[1], anio <= input$date_range[2])
+  })
+
+  # Crear el gráfico reactivo
+  output$freedom_plot <- renderPlotly({
+    # Puedes personalizar el tipo de gráfico según tus necesidades
+    plot_ly(data = filtered_data(), x = ~anio, y = ~get(paste0("libertad_", input$data_type, "_puntaje")), type = "scatter", mode = "lines", name = input$data_type)
+  })
+
+  # Configurar la descarga de datos
+  output$download_data <- downloadHandler(
+    filename = function() {
+      paste("freedom_data_", input$país, "_", format(Sys.Date(), "%Y%m%d"), ".csv", sep = "")
+    },
+    content = function(file) {
+      write.csv(filtered_data(), file, row.names = FALSE)
+    }
+  )
+}
+
+# Ejecutar la aplicación
+shinyApp(ui, server)
+```
+
+
 
